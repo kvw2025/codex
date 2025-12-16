@@ -1,0 +1,172 @@
+:root {
+  --bg: #030303;
+  --text: #f5f5f5;
+  --muted: #a0a0a0;
+  --accent: #f48c1a;
+  --map-dot: #555;
+  --map-dot-day: #c8c8c8;
+  --curve: #2d2d2d;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.02), transparent 30%),
+              radial-gradient(circle at 70% 70%, rgba(255,255,255,0.03), transparent 35%),
+              var(--bg);
+  color: var(--text);
+}
+
+.app {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 32px 28px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.status-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 20px;
+}
+
+.status-icon {
+  width: 28px;
+  height: 28px;
+  color: #fff;
+  display: inline-flex;
+}
+
+.status-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.layout {
+  display: grid;
+  grid-template-columns: 340px 1fr;
+  gap: 28px;
+  align-items: stretch;
+}
+
+.clock-panel {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+  padding: 20px 16px 24px;
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255,255,255,0.04), rgba(255,255,255,0.01));
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.04);
+}
+
+.clock-heading {
+  font-size: 30px;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.clock-time {
+  font-size: clamp(72px, 8vw, 110px);
+  font-weight: 700;
+  letter-spacing: -2px;
+}
+
+.clock-sub {
+  color: var(--muted);
+  font-size: 16px;
+}
+
+.city-selector {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.city-chip {
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #fff;
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.city-chip:hover { border-color: rgba(255,255,255,0.3); }
+
+.city-chip.active {
+  background: rgba(244,140,26,0.15);
+  border-color: var(--accent);
+  color: var(--accent);
+  box-shadow: 0 6px 18px rgba(244,140,26,0.25);
+}
+
+.map-panel {
+  position: relative;
+  overflow: hidden;
+  border-radius: 20px;
+  background: radial-gradient(circle at 40% 40%, rgba(255,255,255,0.05), rgba(0,0,0,0.35) 65%),
+              linear-gradient(110deg, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0.9) 100%);
+  box-shadow: 0 10px 40px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.05);
+  min-height: 520px;
+}
+
+#world-map {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.legend {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: rgba(244,140,26,0.4);
+}
+
+.legend-dot--selected { background: var(--accent); }
+
+@media (max-width: 960px) {
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .clock-panel {
+    order: 2;
+  }
+
+  .map-panel {
+    min-height: 360px;
+    order: 1;
+  }
+}
