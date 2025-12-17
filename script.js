@@ -1,162 +1,9 @@
 const cities = [
-  { name: 'San Jose', tz: 'America/Los_Angeles', lat: 37.3382, lon: -121.8863 },
+  { name: 'My timezone', tz: 'America/Los_Angeles', lat: 37.3382, lon: -121.8863 },
   { name: 'New York', tz: 'America/New_York', lat: 40.7128, lon: -74.006 },
-  { name: 'London', tz: 'Europe/London', lat: 51.5074, lon: -0.1278 },
-  { name: 'Lagos', tz: 'Africa/Lagos', lat: 6.5244, lon: 3.3792 },
-  { name: 'São Paulo', tz: 'America/Sao_Paulo', lat: -23.5505, lon: -46.6333 },
-  { name: 'Dubai', tz: 'Asia/Dubai', lat: 25.2048, lon: 55.2708 },
-  { name: 'Sydney', tz: 'Australia/Sydney', lat: -33.8688, lon: 151.2093 },
-  { name: 'Tokyo', tz: 'Asia/Tokyo', lat: 35.6762, lon: 139.6503 },
+  { name: 'Beijing', tz: 'Asia/Shanghai', lat: 39.9042, lon: 116.4074 },
 ];
-
-const landPolygons = [
-  [
-    [-168, 70], [-52, 70], [-52, 12], [-80, 8], [-100, 8], [-120, 24], [-134, 42], [-168, 44]
-  ], // North America
-  [
-    [-82, 12], [-34, 12], [-34, -56], [-68, -56], [-82, -24]
-  ], // South America
-  [
-    [-10, 72], [40, 72], [40, 35], [0, 35]
-  ], // Europe (upper band)
-  [
-    [-20, 35], [52, 35], [52, -35], [-20, -35]
-  ], // Africa
-  [
-    [40, 72], [180, 72], [180, 8], [120, 8], [96, 20], [70, 20], [70, 35], [40, 35]
-  ], // Asia
-  [
-    [110, -10], [156, -10], [156, -44], [110, -44]
-  ], // Australia
-  [
-    [-180, -90], [180, -90], [180, -60], [-180, -60]
-  ], // Antarctica base
-];
-
-const mapCanvas = document.getElementById('world-map');
-const ctx = mapCanvas.getContext('2d');
-const statusTimeEl = document.getElementById('status-time');
-const cityNameEl = document.getElementById('city-name');
-const cityTimeEl = document.getElementById('city-time');
-const cityDateEl = document.getElementById('city-date');
-const citySelectorEl = document.getElementById('city-selector');
-const mapPanel = document.querySelector('.map-panel');
-
-let selectedCity = cities[0];
-let dots = [];
-let mapWidth = 1200;
-let mapHeight = 580;
-
-function lonLatToXY(lon, lat) {
-  return {
-    x: ((lon + 180) / 360) * mapWidth,
-    y: ((90 - lat) / 180) * mapHeight,
-  };
-}
-
-function pointInPolygon(point, vs) {
-  const x = point[0], y = point[1];
-  let inside = false;
-  for (let i = 0, j = vs.length - 1; i < vs.length; j = i++) {
-    const xi = vs[i][0], yi = vs[i][1];
-    const xj = vs[j][0], yj = vs[j][1];
-    const intersect = ((yi > y) !== (yj > y)) &&
-      (x < (xj - xi) * (y - yi) / (yj - yi + Number.EPSILON) + xi);
-    if (intersect) inside = !inside;
-  }
-  return inside;
-}
-
-function generateDots() {
-  dots = [];
-  const spacing = Math.max(14, Math.min(20, mapWidth / 70));
-  for (let x = 0; x <= mapWidth; x += spacing) {
-    for (let y = 0; y <= mapHeight; y += spacing) {
-      const lon = (x / mapWidth) * 360 - 180;
-      const lat = 90 - (y / mapHeight) * 180;
-      if (landPolygons.some(poly => pointInPolygon([lon, lat], poly))) {
-        dots.push({ x, y, lon, lat });
-      }
-    }
-  }
-}
-
-function getSunLongitude(now) {
-  const minutesUTC = now.getUTCHours() * 60 + now.getUTCMinutes() + now.getUTCSeconds() / 60;
-  return (minutesUTC / (24 * 60)) * 360 - 180;
-}
-
-function drawTerminator(phase) {
-  ctx.save();
-  ctx.strokeStyle = '#3a3a3a';
-  ctx.lineWidth = 5;
-  ctx.beginPath();
-  const amplitude = mapHeight * 0.42;
-  const yOffset = mapHeight * 0.55;
-  const segments = 180;
-  for (let i = 0; i <= segments; i++) {
-    const t = i / segments;
-    const x = t * mapWidth;
-    const y = yOffset + Math.sin(t * Math.PI * 2 + phase) * amplitude * 0.35;
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
-  }
-  ctx.stroke();
-  ctx.restore();
-}
-
-function drawMap() {
-  const now = new Date();
-  const sunLon = getSunLongitude(now);
-  const phase = ((sunLon + 180) / 360) * Math.PI * 2;
-
-  ctx.clearRect(0, 0, mapWidth, mapHeight);
-  ctx.fillStyle = '#050505';
-  ctx.fillRect(0, 0, mapWidth, mapHeight);
-
-  drawTerminator(phase);
-
-  dots.forEach(dot => {
-    const lightFactor = Math.max(0, Math.cos((dot.lon - sunLon) * (Math.PI / 180)));
-    const alpha = 0.28 + lightFactor * 0.5;
-    const colorChannel = Math.floor(80 + lightFactor * 140);
-    ctx.fillStyle = `rgba(${colorChannel},${colorChannel},${colorChannel},${alpha})`;
-    ctx.beginPath();
-    ctx.arc(dot.x, dot.y, 5.2, 0, Math.PI * 2);
-    ctx.fill();
-  });
-
-  cities.forEach(city => {
-    const { x, y } = lonLatToXY(city.lon, city.lat);
-    const isSelected = city === selectedCity;
-    ctx.beginPath();
-    ctx.fillStyle = isSelected ? '#f48c1a' : 'rgba(244,140,26,0.75)';
-    ctx.arc(x, y, isSelected ? 11 : 9, 0, Math.PI * 2);
-    ctx.fill();
-
-    if (isSelected) {
-      ctx.strokeStyle = 'rgba(244,140,26,0.5)';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(x, y, 16, 0, Math.PI * 2);
-      ctx.stroke();
-    }
-  });
-}
-
-function resizeCanvas() {
-  const { width, height } = mapPanel.getBoundingClientRect();
-  mapWidth = Math.round(width * window.devicePixelRatio);
-  mapHeight = Math.round(Math.max(height, width * 0.55) * window.devicePixelRatio);
-
-  mapCanvas.width = mapWidth;
-  mapCanvas.height = mapHeight;
-  mapCanvas.style.width = `${width}px`;
-  mapCanvas.style.height = `${mapHeight / window.devicePixelRatio}px`;
-  generateDots();
-  drawMap();
-}
-
+let selectedCityIndex = 0;
 function formatTime(date, tz, options = {}) {
   return new Intl.DateTimeFormat('en-US', {
     hour: '2-digit',
@@ -166,58 +13,109 @@ function formatTime(date, tz, options = {}) {
     ...options,
   }).format(date);
 }
-
-function updateClock() {
-  const now = new Date();
-  statusTimeEl.textContent = formatTime(now, Intl.DateTimeFormat().resolvedOptions().timeZone);
-
-  cityNameEl.textContent = selectedCity.name;
-  cityTimeEl.textContent = formatTime(now, selectedCity.tz);
-  cityDateEl.textContent = new Intl.DateTimeFormat('en-US', {
-    weekday: 'long',
-    month: 'short',
-    day: 'numeric',
-    timeZone: selectedCity.tz,
-  }).format(now);
-
-  drawMap();
+function getSecond(date) {
+  return date.getSeconds();
+}
+function Pgs_sec(date) {
+    return getSecond(date) / 60;
+}
+function updateDate(selectCityIndex,Element){
+    const now = new Date();
+    selectedCity = cities[selectCityIndex];
+    Element.innerHTML = formatTime(now, selectedCity.tz);
+    const secLabel = document.getElementById("sec-label");
+    secLabel.innerHTML = getSecond(now).toString().padStart(2, '0') + "";
+    const pgsContainer = document.getElementById("pgs-sec");
+    const pgsValue = Pgs_sec(now);
+    pgsContainer.style.width = (pgsValue * 100) + "%";
+    console.log(pgsValue);
+}
+function calculateTimezoneDifferences(tz1, tz2) {
+    const now = new Date();
+    const options = { hour: '2-digit', hour12: false, timeZone: tz1 };
+    const time1 = new Intl.DateTimeFormat('en-US', options).format(now);
+    options.timeZone = tz2;
+    const time2 = new Intl.DateTimeFormat('en-US', options).format(now);
+    const hour1 = parseInt(time1, 10);
+    const hour2 = parseInt(time2, 10);
+    let diff = hour2 - hour1;
+    if (diff > 12) diff -= 24;
+    if (diff < -12) diff += 24;
+    return diff;
+}
+function displayCityListTimes(cities){
+    const cityListEl = document.getElementById("city-date");
+    cityListEl.innerHTML = "";
+    selectedCity = cities[selectedCityIndex];
+    cities.forEach((city, index) => {
+        const cityItemEl = document.createElement("div");
+        cityItemEl.className = "city-item";
+        
+        if (calculateTimezoneDifferences(selectedCity.tz, city.tz) == 0) {
+            return;
+        }
+        cityItemEl.innerHTML = `<div class="cityname">${city.name}</div> 
+         <div class="relativity">${calculateTimezoneDifferences(selectedCity.tz, city.tz) >= 0 ? '+' : ''}${calculateTimezoneDifferences(selectedCity.tz, city.tz)}h</div>
+          <div class="citytime">${formatTime(new Date(), city.tz)}</div> `;
+        cityItemEl.style.cursor = "pointer";
+        cityItemEl.style.gap = "20px";
+        cityItemEl.style.display = "flex";
+        cityItemEl.style.justifyContent = "center";
+        cityItemEl.style.marginBottom = "15px";
+        cityItemEl.style.marginLeft = "0";
+        cityItemEl.style.alignItems = "center";
+        cityItemEl.onclick = () => {
+            selectedCityIndex = index;
+            selectedCity = cities[selectedCityIndex];
+            const cityNameEl = document.getElementById("city-name");
+            const cityTimeEl = document.getElementById("city-time");
+            cityNameEl.innerText = city.name;
+            selectedCityIndex = index;
+            updateDate(index, cityTimeEl);
+        };
+        cityListEl.appendChild(cityItemEl);
+    });
 }
 
-function buildCitySelector() {
-  cities.forEach(city => {
-    const chip = document.createElement('button');
-    chip.className = 'city-chip';
-    chip.type = 'button';
-    chip.textContent = city.name;
-    chip.setAttribute('aria-pressed', city === selectedCity);
-    chip.addEventListener('click', () => selectCity(city));
-    citySelectorEl.appendChild(chip);
-  });
-  refreshChips();
+const cityDateEl = document.getElementById("city-time")
+const statusTimeEl = document.getElementById("status-time");
+setInterval(() => {
+    updateDate(selectedCityIndex,cityDateEl);
+    updateDate(0,statusTimeEl);
+    displayCityListTimes(cities);
+}, 1000);
+    updateDate(selectedCityIndex,cityDateEl);
+    updateDate(0,statusTimeEl);
+    displayCityListTimes(cities);
+function countdownPgs(startDate, endDate, tz, PgsBarElement, dataLabelElement=null, secLabelElement=null, decimalPlaces=4,formattedRemainingElement=null) {
+    const now = new Date();
+    const options = { timeZone: tz };
+    const start = new Date(startDate.toLocaleString('en-US', options));
+    const end = new Date(endDate.toLocaleString('en-US', options));
+    const totalSeconds = (end - start) / 1000;
+    const elapsedSeconds = (now - start) / 1000;
+    const pgsValue = Math.min(Math.max((now - start) / (end - start), 0), 1);
+    PgsBarElement.style.width = (pgsValue * 100) + "%";
+    if (dataLabelElement) {
+        const progressPercentage = (pgsValue * 100).toFixed(decimalPlaces);
+        dataLabelElement.innerHTML = `${progressPercentage}%`;
+    }
+    if (secLabelElement) {
+        const remainingSeconds = Math.max(0, Math.ceil((end - now) / 1000));
+        secLabelElement.innerHTML = remainingSeconds.toString().padStart(2, '0') + "s";
+    }
+    const formattedRemaining = `<b style="color:var(--accent)">${Math.max(0, Math.floor((end - now) / (1000 * 60 * 60 * 24)))}</b><c style="font-size:smaller;color:var(--accent)">d</c><br><c style="font-size:smaller;color:var(--accent)">${Math.max(0, Math.floor((end - now) / (1000 * 60 * 60)) % 24).toString().padStart(2, '0')}:${Math.max(0, Math.floor((end - now) / (1000 * 60)) % 60).toString().padStart(2, '0')}:${Math.max(0, Math.floor((end - now) / 1000) % 60).toString().padStart(2, '0')}</c>`; 
+    if (formattedRemainingElement) {
+        formattedRemainingElement.innerHTML = formattedRemaining;
+    }
 }
 
-function refreshChips() {
-  [...citySelectorEl.children].forEach(chip => {
-    const city = cities.find(c => c.name === chip.textContent);
-    const active = city === selectedCity;
-    chip.classList.toggle('active', active);
-    chip.setAttribute('aria-pressed', active);
-  });
-}
-
-function selectCity(city) {
-  selectedCity = city;
-  refreshChips();
-  updateClock();
-}
-
-function handleResize() {
-  resizeCanvas();
-}
-
-window.addEventListener('resize', handleResize);
-
-buildCitySelector();
-resizeCanvas();
-updateClock();
-setInterval(updateClock, 1000);
+setInterval(() => {
+    const vacationStart = new Date('2025-12-12');
+    const vacationEnd = new Date('2026-01-04');
+    const pgsContainer = document.getElementById("vac-pgs");
+    const dataLabel = document.getElementById("vac-percentage");
+    const Remaining = document.getElementById("vac-label");
+    const secLabel = document.getElementById("vacation-sec-label");
+    countdownPgs(vacationStart, vacationEnd, Intl.DateTimeFormat().resolvedOptions().timeZone, pgsContainer,dataLabel, secLabel, 4, Remaining);
+}, 50);
