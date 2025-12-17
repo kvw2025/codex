@@ -30,13 +30,14 @@
             <div class="pgs" id="pgs-sec"></div>
         </div>
         </div>
-        
-        <div class="clock-sub" id="city-date"></div>
-        <div class="city-selector" id="city-selector"></div>
+        <div class="btn-textonly" id="show" onclick="this.style.display='none';document.getElementById('city-date').style.display='';document.getElementById('hide').style.display=''">Manage Timezone...</div>
+        <div style="display:none" class="clock-sub" id="city-date"></div>
+        <div class="btn-textonly" style="display:none" id="hide" onclick="this.style.display='none';document.getElementById('city-date').style.display='none';document.getElementById('show').style.display=''">Show Less...</div>
       </section>
 
       <section class="vacation-countdown">
         <div style="width:100%;align-items:center;justify-content:center;text-align:center;">
+          
           <h2 class="countdown-heading">Winter Break Progress</h2>
           <div class="progressItemContainer">
             <div class="countdown-label" id="vac-label" style="width:50px"></div>
@@ -46,6 +47,20 @@
             <div class="vac-%-label" id="vac-percentage">Calculating</div>
           </div>
           <br>
+
+          <h2 class="countdown-heading">2025-2026 School Year</h2>
+          <div class="progressItemContainer">
+            <div class="countdown-label" id="schyear-label" style="width:50px"></div>
+            <div class="pgsContainer">
+              <div class="pgsBar" id="schyear-pgs"></div>
+            </div>
+            <div class="vac-%-label" id="schyear-percentage">Calculating</div>
+          </div>
+          <br>
+
+
+
+
         </div>
       </section>
     </main>

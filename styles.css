@@ -3,6 +3,7 @@
   --text: #f5f5f5;
   --muted: #a0a0a0;
   --accent: #f48c1a;
+  --accent-rgb: 244, 140, 26;
   --map-dot: #555;
   --map-dot-day: #c8c8c8;
   --curve: #2d2d2d;
@@ -59,7 +60,7 @@ body {
 
 .layout {
   display: grid;
-  grid-template-columns: 340px 1fr;
+  grid-template-columns: 370px 1fr;
   gap: 28px;
   align-items: stretch;
 }
@@ -111,13 +112,23 @@ body {
   gap: 15px;
 }
 .clock-sub {
-  margin-left: 0px;
+  margin-left: -10px;
   color: var(--muted);
   font-size: 16px;
   justify-content:left;
   gap:20px;
 }
-
+.btn-textonly {
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: 600;
+  padding:10px 10px;
+  width:100%;
+  text-align: left;
+  color: var(--muted);
+  background: none;
+  margin-left:10px;
+}
 .city-selector {
   display: flex;
   flex-wrap: wrap;
@@ -168,16 +179,14 @@ body {
   display: block;
 }
 .pgs-container {
-  border-radius:0px;
-  border:2px solid var(--accent);
-  border-top:none;
-  border-bottom:none;
+  border-radius:50px;
+  border: 1px solid rgba(var(--accent-rgb), 0.6);
   width:40%;
-  padding:0px 0px;
+  padding:2px 2px;
 }
 .pgs {
-  height:2px;
-  border-radius:0px;
+  height:3px;
+  border-radius:50px;
   width:0%;
   transition: width 0.3s linear;
   background: var(--accent);

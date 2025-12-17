@@ -1,5 +1,5 @@
 const cities = [
-  { name: 'My timezone', tz: 'America/Los_Angeles', lat: 37.3382, lon: -121.8863 },
+  { name: '', tz: 'America/Los_Angeles', lat: 37.3382, lon: -121.8863 },
   { name: 'New York', tz: 'America/New_York', lat: 40.7128, lon: -74.006 },
   { name: 'Beijing', tz: 'Asia/Shanghai', lat: 39.9042, lon: 116.4074 },
 ];
@@ -19,15 +19,22 @@ function getSecond(date) {
 function Pgs_sec(date) {
     return getSecond(date) / 60;
 }
-function updateDate(selectCityIndex,Element){
+function updateDate(selectCityIndex,Element,disableChangeCity){
     const now = new Date();
-    selectedCity = cities[selectCityIndex];
+    if (disableChangeCity==false) {
+        selectedCity = cities[selectCityIndex];
+    }
     Element.innerHTML = formatTime(now, selectedCity.tz);
     const secLabel = document.getElementById("sec-label");
     secLabel.innerHTML = getSecond(now).toString().padStart(2, '0') + "";
     const pgsContainer = document.getElementById("pgs-sec");
     const pgsValue = Pgs_sec(now);
     pgsContainer.style.width = (pgsValue * 100) + "%";
+    const cityNameEl = document.getElementById("city-name");
+    const city = cities[selectCityIndex];
+    if (disableChangeCity) return;
+    cityNameEl.innerText = city.name != "" ? city.name + " - " + new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'long', day: 'numeric' }).format(new Date()) : new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'long', day: 'numeric' }).format(new Date());
+            
     console.log(pgsValue);
 }
 function calculateTimezoneDifferences(tz1, tz2) {
@@ -54,7 +61,7 @@ function displayCityListTimes(cities){
         if (calculateTimezoneDifferences(selectedCity.tz, city.tz) == 0) {
             return;
         }
-        cityItemEl.innerHTML = `<div class="cityname">${city.name}</div> 
+        cityItemEl.innerHTML = `<div class="cityname">${city.name != "" ? city.name : "Current"}</div> 
          <div class="relativity">${calculateTimezoneDifferences(selectedCity.tz, city.tz) >= 0 ? '+' : ''}${calculateTimezoneDifferences(selectedCity.tz, city.tz)}h</div>
           <div class="citytime">${formatTime(new Date(), city.tz)}</div> `;
         cityItemEl.style.cursor = "pointer";
@@ -65,11 +72,10 @@ function displayCityListTimes(cities){
         cityItemEl.style.marginLeft = "0";
         cityItemEl.style.alignItems = "center";
         cityItemEl.onclick = () => {
-            selectedCityIndex = index;
-            selectedCity = cities[selectedCityIndex];
             const cityNameEl = document.getElementById("city-name");
             const cityTimeEl = document.getElementById("city-time");
-            cityNameEl.innerText = city.name;
+            const city = cities[index];
+            cityNameEl.innerText = city.name != "" ? city.name + " - " + new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'long', day: 'numeric' }).format(new Date()) : new Intl.DateTimeFormat('en-US', { weekday: 'short', month: 'long', day: 'numeric' }).format(new Date());
             selectedCityIndex = index;
             updateDate(index, cityTimeEl);
         };
@@ -80,12 +86,12 @@ function displayCityListTimes(cities){
 const cityDateEl = document.getElementById("city-time")
 const statusTimeEl = document.getElementById("status-time");
 setInterval(() => {
-    updateDate(selectedCityIndex,cityDateEl);
-    updateDate(0,statusTimeEl);
+    updateDate(selectedCityIndex,cityDateEl,false);
+    updateDate(0,statusTimeEl,true);
     displayCityListTimes(cities);
-}, 1000);
-    updateDate(selectedCityIndex,cityDateEl);
-    updateDate(0,statusTimeEl);
+}, 500);
+    updateDate(selectedCityIndex,cityDateEl,false);
+    updateDate(0,statusTimeEl,true);
     displayCityListTimes(cities);
 function countdownPgs(startDate, endDate, tz, PgsBarElement, dataLabelElement=null, secLabelElement=null, decimalPlaces=4,formattedRemainingElement=null) {
     const now = new Date();
@@ -118,4 +124,13 @@ setInterval(() => {
     const Remaining = document.getElementById("vac-label");
     const secLabel = document.getElementById("vacation-sec-label");
     countdownPgs(vacationStart, vacationEnd, Intl.DateTimeFormat().resolvedOptions().timeZone, pgsContainer,dataLabel, secLabel, 4, Remaining);
+}, 50);
+setInterval(() => {
+    const vacationStart = new Date('2025-9-21');
+    const vacationEnd = new Date('2026-06-11');
+    const pgsContainer = document.getElementById("schyear-pgs");
+    const dataLabel = document.getElementById("schyear-percentage");
+    const Remaining = document.getElementById("schyear-label");
+    const secLabel = document.getElementById("schyear-sec-label");
+    countdownPgs(vacationStart, vacationEnd, Intl.DateTimeFormat().resolvedOptions().timeZone, pgsContainer,dataLabel, secLabel, 5, Remaining);
 }, 50);
