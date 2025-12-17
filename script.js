@@ -61,7 +61,7 @@ function displayCityListTimes(cities){
         cityItemEl.style.gap = "20px";
         cityItemEl.style.display = "flex";
         cityItemEl.style.justifyContent = "center";
-        cityItemEl.style.marginBottom = "15px";
+        cityItemEl.style.marginTop = "15px";
         cityItemEl.style.marginLeft = "0";
         cityItemEl.style.alignItems = "center";
         cityItemEl.onclick = () => {
